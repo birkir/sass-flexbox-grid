@@ -1,0 +1,154 @@
+// Flexbox Grid
+// ported from github.com/kristoferjoseph/flexboxgrid
+//
+// Copyright (c) 2015 Birkir Gudjonsson
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// mixins from http://github.com/mastastealth/sass-flex-mixin
+@import "flex";
+
+// variables
+$outer-margin: 2rem;
+$gutter-width: 1rem;
+$columns: 12;
+
+// computed
+$gutter-splitted: $gutter-width / 2;
+$gutter-compensation: $gutter-splitted * -1;
+
+// base grid column extender
+@mixin column-base {
+  @include flexbox;
+  @include flex(0 1 auto);
+  @include flex-direction(column);
+  @include flex-grow(0);
+  @include flex-shrink(0);
+  box-sizing: border-box;
+  padding-left: $gutter-splitted;
+  padding-right: $gutter-splitted;
+}
+
+// column mixin
+@mixin column($index: 0) {
+  @include flex-basis(percentage($index / $columns));
+  max-width: percentage($index / $columns);
+  @if $index == 1 {
+    @include flex-grow(1);
+  }
+}
+
+// make grid
+@mixin grid($size, $width: 0) {
+  // proxy column base because of media scopes
+  %column-#{$size}-base {
+    @include column-base;
+  }
+  // set container width for viewports
+  @if $width != 0 {
+    .container {
+      width: #{$width + $gutter-width / ($gutter-width * 0 + 1)}em;
+    }
+  }
+  @for $i from 1 through $columns {
+    // create column classes
+    .col-#{$size}-#{$i} {
+      @extend %column-#{$size}-base; !optional
+      @include column($i);
+    }
+    // offet classes
+    @if $i < 12 {
+      .col-#{$size}-offset-#{$i} {
+        margin-left: percentage($i / $columns);
+      }
+    }
+  }
+  // some helper classes
+  .start-#{$size} {
+    @include justify-content(start);
+    text-align: start;
+  }
+  .center-#{$size} {
+    @include justify-content(center);
+    text-align: center;
+  }
+  .end-#{$size} {
+    @include justify-content(end);
+    text-align: end;
+  }
+  .top-#{$size} {
+    @include align-items(start);
+  }
+  .middle-#{$size} {
+    @include align-items(middle);
+  }
+  .bottom-#{$size} {
+    @include align-items(bottom);
+  }
+  .around-#{$size} {
+    @include justify-content(space-around);
+  }
+  .between-#{$size} {
+    @include justify-content(space-between);
+  }
+  .first-#{$size} {
+    @include order(-1);
+  }
+  .last-#{$size} {
+    @include order(1);
+  }
+}
+
+.container-fluid {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: $outer-margin;
+  padding-right: $outer-margin;
+}
+
+.row {
+  @include flexbox;
+  @include flex(0 1 auto);
+  @include flex-direction(row);
+  @include flex-wrap(wrap);
+  box-sizing: border-box;
+  margin-left: $gutter-compensation;
+  margin-right: $gutter-compensation;
+}
+
+.row.reverse {
+  @include flex-direction(row-reverse);
+}
+
+.col.reverse {
+  @include flex-direction(column-reverse);
+}
+
+@include grid(xs);
+
+@media only screen and (min-width: 48em) {
+  @include grid(sm, 45);
+}
+
+@media only screen and (min-width: 62em) {
+  @include grid(md, 60);
+}
+
+@media only screen and (min-width: 75em) {
+  @include grid(lg, 70);
+}
